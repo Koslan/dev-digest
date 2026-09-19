@@ -119,6 +119,6 @@ or the API crashes at import time — the server loads its raw source.
   deletes its review explicitly in `run.repo.ts`.
 - Boot reaping in `app.ts` flips every `running` row to `failed`; it assumes one
   API instance per database.
-- Migration `0009_complex_runaways.sql` dropped `agent_runs.cost_usd`. Cost is
-  still computed in memory by the engine but no longer persisted for local runs;
-  `ci_runs` and `eval_runs` keep their own `cost_usd`.
+- `agent_runs.cost_usd` was dropped by migration `0009_complex_runaways.sql` and
+  re-added by `0010_superb_solo.sql`. It is null when the provider reported no
+  cost and on failed or cancelled runs — null means unknown, never free.

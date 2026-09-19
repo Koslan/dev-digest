@@ -85,9 +85,9 @@ Because the server imports the raw source through a tsconfig path alias,
 
 ## Gotchas
 
-- `costUsd` is computed and returned by the engine, but the server does not
-  persist it for local runs — `agent_runs.cost_usd` was dropped by migration
-  0009. Cost null-poisons: if any chunk returns `null`, the total is `null`.
+- `costUsd` null-poisons: if any chunk returns `null`, the total is `null`. The
+  server persists that null as-is, and every UI surface renders it as empty —
+  unknown, never free.
 - The engine holds no price table. `estimateCost` is injected into the OpenRouter
   provider by the server's `PriceBook`.
 - `listModels()` does a raw `fetch` to `/models` because the SDK strips pricing.

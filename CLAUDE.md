@@ -167,8 +167,12 @@ is append-only history. It records what was already applied to real databases.
 
 ### Other frozen areas
 
-- `server/src/vendor/shared` and `client/src/vendor/shared` are one contract in
-  two places. Change the server copy and mirror it verbatim; never let them drift.
+- `server/src/vendor/shared` and `client/src/vendor/shared` are two copies of the
+  same contracts, already partially drifted: the client copy trims server-only
+  pieces (for example it has no `openrouter` provider and no CI manifests).
+  Always edit the server copy first, then port **only the fields you changed**
+  into the client copy. Never overwrite a client contract file wholesale — that
+  silently reintroduces server-only types the Next build cannot resolve.
 - `skills-lock.json` and the `.claude/skills/*` folders listed in it are vendored
   from upstream sources. Add your own skills as new folders instead of editing
   vendored ones.

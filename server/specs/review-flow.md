@@ -96,7 +96,7 @@ In this order (`run-executor.ts:217`):
    agent's `ci_fail_on`, never taken from the model verdict
    (`run-executor.ts:240`).
 5. `completeAgentRun` with `status: 'done'`, `duration_ms`, `tokens_in`,
-   `tokens_out`, `findings_count`, `grounding`, `score`, `blockers`.
+   `tokens_out`, `findings_count`, `grounding`, `score`, `blockers`, `cost_usd`.
 6. One `run_traces` document upserted by `run_id` (`run.repo.ts:176`).
 7. `runBus.complete(runId)`.
 
@@ -113,12 +113,26 @@ that happened before the agent fan-out.
 - Token counts are summed per chunk inside the engine
   (`reviewer-core/src/review/run.ts:182`) and land in two places: the
   `agent_runs` columns and `run_traces.trace.stats`.
-- The engine also computes `costUsd` in memory (`run.ts:184`) and the LLM
-  adapters return a cost per call, but **local runs do not persist cost**:
-  migration `0009_complex_runaways.sql` dropped `agent_runs.cost_usd`.
-- Any feature that needs a persisted cost must add a new migration through
-  `pnpm db:generate`. Re-adding the column by editing an old migration is
-  forbidden — see [../CLAUDE.md](../CLAUDE.md).
+- Cost travels the same path. The engine sums `costUsd` per chunk from the
+  provider's usage report, or from the price-book estimate injected into the
+  provider; the executor persists it to `agent_runs.cost_usd` and copies it into
+  `run_traces.trace.stats.cost_usd`.
+- **Null means unknown, never free.** Cost null-poisons inside the engine: one
+  chunk without a reported cost makes the whole run null. Every consumer renders
+  null as empty or an em dash, never as `$0.00`.
+- Failed and cancelled runs persist no cost; the column stays null.
+- History: migration `0009_complex_runaways.sql` dropped the original
+  `cost_usd`, and `0010_superb_solo.sql` added it back for this feature. The
+  column was re-added by generating a new migration, never by editing 0009 —
+  see [../CLAUDE.md](../CLAUDE.md).
+
+### Aggregation for the PR list
+
+`GET /repos/:id/pulls` returns `cost_usd` per PR: the **sum over runs with
+`status = 'done'`** in that workspace. Failed and cancelled runs are excluded
+however expensive they were, runs with an unknown cost contribute nothing, and a
+PR with no successful run reports `null`.
+Pinned by `test/pulls-cost.it.test.ts`.
 
 ## 9. Streaming contract
 

@@ -129,6 +129,29 @@ export default async function pullsRoutes(appBase: FastifyInstance) {
       }
     }
 
+    // Total COST per PR for the list's cost column: the sum over every
+    // SUCCESSFUL run (status='done'). Failed/cancelled runs are excluded — the
+    // column answers "what did reviewing this PR cost", and a crashed run is
+    // not a review. A PR with no successful run, or whose runs all reported an
+    // unknown cost, stays absent from the map and renders as empty, NOT as $0.
+    const costByPr = new Map<string, number>();
+    if (prIds.length > 0) {
+      const costRows = await container.db
+        .select({ prId: t.agentRuns.prId, costUsd: t.agentRuns.costUsd })
+        .from(t.agentRuns)
+        .where(
+          and(
+            inArray(t.agentRuns.prId, prIds),
+            eq(t.agentRuns.workspaceId, workspaceId),
+            eq(t.agentRuns.status, 'done'),
+          ),
+        );
+      for (const row of costRows) {
+        if (!row.prId || row.costUsd == null) continue;
+        costByPr.set(row.prId, (costByPr.get(row.prId) ?? 0) + row.costUsd);
+      }
+    }
+
     const now = Date.now();
     return rows.map((r) => {
       const review = latestReviewByPr.get(r.id);
@@ -153,6 +176,7 @@ export default async function pullsRoutes(appBase: FastifyInstance) {
         opened_at: r.openedAt?.toISOString() ?? null,
         updated_at: r.updatedAt?.toISOString() ?? null,
         score: review ? review.score : null,
+        cost_usd: costByPr.get(r.id) ?? null,
       };
     });
   });

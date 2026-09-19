@@ -36,15 +36,20 @@ the PR list are local state on purpose.
 | Author | avatar and login |
 | Size | `S`/`M`/`L` badge plus changed lines; thresholds 100 and 400 |
 | Score | circular score, or an em dash when `score` is null — **null means never reviewed, not zero** |
+| Cost | total USD of every **successful** run of this PR, or an em dash — **null means unknown, never $0** |
 | Status | dot badge from `STATUS_META` |
 | Updated | compact relative time (`now`, `5m`, `3h`, `2d`), right aligned |
 
 - The whole row is a link to `/repos/{repoId}/pulls/{number}`.
 - `FilterBar` holds the search box, the status chips, the sort select and the
   refresh button; refresh maps to `POST /repos/:id/refresh`.
-- **Contract limit:** `PrMeta` exposes `score` and no per-severity counts. Any
-  findings column needs the server contract extended; it cannot be derived on the
-  client from the list response alone.
+- **Cost formatting is shared** with the timeline and the trace drawer, in
+  `src/lib/cost.ts`: four decimals below a dollar, two above, `<$0.0001` for a
+  non-zero amount below that, and `null` — rendered as an em dash — whenever the
+  amount is unknown.
+- **Contract limit:** `PrMeta` exposes `score` and `cost_usd`, but no
+  per-severity finding counts. A findings column needs the server contract
+  extended; it cannot be derived on the client from the list response alone.
 
 ## PR detail
 
@@ -86,7 +91,8 @@ Sections in fixed order:
    then `rejected` when blockers are present, `reviewed` when findings exist,
    otherwise `approved`. A run with blockers must never render as a plain
    success. Tiles also carry the circular score, agent name, provider and model,
-   the run time, a trace button and a delete button.
+   the run time with **that run's cost** beneath it, a trace button and a
+   delete button.
 4. **Review runs** — one collapsible `ReviewRunAccordion` per review, newest
    first, the first one open by default.
 
@@ -125,7 +131,8 @@ Trace tab sections, in order:
 
 1. **Configuration** — model, provider, memory pulled, specs read.
 2. **Stats** — the grounding string as a badge, plus stat tiles: **DURATION**
-   (`8.2s`), **TOKENS** (`12k→1.5k`), **FINDINGS** (count).
+   (`8.2s`), **TOKENS** (`12k→1.5k`), **FINDINGS** (count) and **COST**
+   (`$0.0042`, or an em dash when the provider reported none).
 3. **Findings** — read-only preview cards: severity badge, title, monospace
    `file:start-end`, rationale, optional suggested fix. No accept or dismiss
    buttons here.

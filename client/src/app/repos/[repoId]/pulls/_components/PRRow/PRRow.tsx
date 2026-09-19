@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Icon, Avatar, Badge, CircularScore } from "@devdigest/ui";
 import type { PrMeta } from "@/lib/types";
+import { formatCostUsd } from "@/lib/cost";
 import { SIZE_COLOR, STATUS_META } from "../../constants";
 import { relativeTime, sizeOf } from "../../helpers";
 import { s } from "../../styles";
@@ -17,6 +18,9 @@ export function PRRow({ pr, repoId }: { pr: PrMeta; repoId: string }) {
   const st = STATUS_META[pr.status] ?? STATUS_META.needs_review!;
   const { size, lines } = sizeOf(pr);
   const reviewed = pr.score != null; // null score ⇒ PR has never been reviewed
+  // Total cost of every successful run of this PR. null ⇒ no successful run yet
+  // (or none reported a cost): the cell stays empty rather than claiming $0.
+  const cost = formatCostUsd(pr.cost_usd);
   return (
     <div
       onMouseEnter={() => setH(true)}
@@ -52,6 +56,9 @@ export function PRRow({ pr, repoId }: { pr: PrMeta; repoId: string }) {
         ) : (
           <span style={s.muted}>—</span>
         )}
+      </div>
+      <div className="mono tnum" style={s.costCell(cost != null)}>
+        {cost ?? "—"}
       </div>
       <div>
         <Badge dot color={st.c} bg="transparent">

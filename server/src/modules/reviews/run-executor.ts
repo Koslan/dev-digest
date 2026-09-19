@@ -210,7 +210,10 @@ export class ReviewRunExecutor {
           if (this.container.runBus.isCancelled(runId)) throw new RunCancelledError();
         },
       });
-      const { tokensIn, tokensOut, grounding } = outcome;
+      // costUsd comes from the provider's usage report, or from the price-book
+      // estimate injected into it. It null-poisons across chunks: one unknown
+      // chunk makes the whole run unknown, which we persist as NULL — never 0.
+      const { tokensIn, tokensOut, grounding, costUsd } = outcome;
 
       const keptFindings = outcome.review.findings;
 
@@ -250,6 +253,7 @@ export class ReviewRunExecutor {
         score: outcome.review.score,
         blockers,
         error: null,
+        costUsd,
       });
 
       const trace: RunTrace = {
@@ -267,6 +271,7 @@ export class ReviewRunExecutor {
           tokens_out: tokensOut,
           findings: findingRows.length,
           grounding,
+          cost_usd: costUsd,
         },
         prompt_assembly: outcome.assembly,
         tool_calls: outcome.chunks.map((c) => ({

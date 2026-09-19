@@ -168,14 +168,15 @@ Key tables for the review path:
 | `repos` | `full_name`, `default_branch`, `clone_path`; unique per `(workspace_id, full_name)` |
 | `pull_requests` | `number`, `head_sha`, `last_reviewed_sha`, `status`, `additions`, `deletions`; unique per `(repo_id, number)` |
 | `pr_files` | `path`, `patch` — the fallback source when a real git diff is unavailable |
-| `agent_runs` | `provider`, `model`, `duration_ms`, `tokens_in`, `tokens_out`, `status`, `source`, `findings_count`, `grounding`, `score`, `blockers` |
+| `agent_runs` | `provider`, `model`, `duration_ms`, `tokens_in`, `tokens_out`, `status`, `source`, `findings_count`, `grounding`, `score`, `blockers`, `cost_usd` |
 | `run_traces` | primary key `run_id`, one `jsonb` document per run, cascade delete |
 | `reviews` | `verdict`, `summary`, `score`, `model`, `run_id` (no FK) |
 | `findings` | `file`, `start_line`, `end_line`, `severity`, `category`, `confidence`, `accepted_at`, `dismissed_at` |
 
-`agent_runs` has no cost column: migration `0009_complex_runaways.sql` dropped
-`cost_usd`. `ci_runs` and `eval_runs` still carry theirs
-(`src/db/schema/ci.ts:23`, `src/db/schema/eval.ts:34`).
+`agent_runs.cost_usd` has a history worth knowing: migration
+`0009_complex_runaways.sql` dropped it, and `0010_superb_solo.sql` added it back
+when local runs started persisting cost. `ci_runs` and `eval_runs` carry their
+own (`src/db/schema/ci.ts:23`, `src/db/schema/eval.ts:34`).
 
 ## Streaming and run control
 
