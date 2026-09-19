@@ -89,9 +89,12 @@ pnpm test       # vitest run (jsdom)
 
 - The tab key `findings` is labelled **"Agent runs"** in the UI. Do not rename one
   without the other; the e2e flows click the visible label.
-- `PrMeta`, the PR-list row contract, carries `score` but no finding counts. A
-  column that needs per-severity counts requires a contract change on the server,
-  not a client-side aggregation.
+- `PrMeta`, the PR-list row contract, carries `score`, `cost_usd` and a
+  `findings` summary of the latest review. Anything else a list column needs is
+  a server contract change, not a client-side aggregation.
+- The list card sets `overflow: hidden` for its rounded corners, so anything
+  that must escape a row — the findings popover — is portalled into `<body>`
+  and positioned with `position: fixed`.
 - `usePulls` polls every 60 s and refetches on window focus; run-related hooks
   poll every 4 s only while a run is active. Keep new polling hooks in that shape.
 - The PR-list grid is defined twice — `GRID` in `constants.ts` feeds both the

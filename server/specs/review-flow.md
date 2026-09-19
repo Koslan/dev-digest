@@ -128,11 +128,23 @@ that happened before the agent fan-out.
 
 ### Aggregation for the PR list
 
+#### Cost
+
 `GET /repos/:id/pulls` returns `cost_usd` per PR: the **sum over runs with
 `status = 'done'`** in that workspace. Failed and cancelled runs are excluded
 however expensive they were, runs with an unknown cost contribute nothing, and a
 PR with no successful run reports `null`.
 Pinned by `test/pulls-cost.it.test.ts`.
+
+#### Findings
+
+The same endpoint returns a `findings` summary per PR, describing the **latest
+review only**: its `run_id`, the `total` number of findings, and up to eight
+previews ordered worst-severity first, each with a rationale truncated to 160
+characters. A PR that has never been reviewed reports `null`; a review that
+found nothing reports `total: 0` with an empty list. One query over the latest
+review ids plus in-memory grouping — no per-PR query and no model call.
+Pinned by `test/pulls-list-findings.it.test.ts`.
 
 ## 9. Streaming contract
 

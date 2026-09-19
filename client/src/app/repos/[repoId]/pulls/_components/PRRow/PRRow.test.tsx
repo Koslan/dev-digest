@@ -31,6 +31,7 @@ function pr(o: Partial<PrMeta> = {}): PrMeta {
     updated_at: "2026-06-11T18:44:34.000Z",
     score: null,
     cost_usd: null,
+    findings: null,
     ...o,
   };
 }
@@ -50,8 +51,30 @@ describe("PRRow — cost cell", () => {
   });
 
   it("renders an em dash when the PR has no successful run yet", () => {
-    // Score set, so the only em dash in the row is the cost cell's.
-    renderRow(pr({ score: 88, cost_usd: null }));
+    // Score and findings set, so the only em dash in the row is the cost cell's.
+    renderRow(
+      pr({
+        score: 88,
+        cost_usd: null,
+        findings: {
+          run_id: "run-1",
+          total: 1,
+          items: [
+            {
+              id: "f1",
+              severity: "CRITICAL",
+              category: "security",
+              title: "Hardcoded secret",
+              file: "src/config.ts",
+              start_line: 11,
+              end_line: 11,
+              confidence: 0.9,
+              rationale: "A secret is committed.",
+            },
+          ],
+        },
+      }),
+    );
     expect(screen.getByText("—")).toBeInTheDocument();
     expect(screen.queryByText(/\$/)).not.toBeInTheDocument();
   });

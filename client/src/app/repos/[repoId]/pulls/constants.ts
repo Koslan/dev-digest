@@ -28,7 +28,7 @@ export const SIZE_COLOR: Record<string, string> = {
  * COLUMN_KEYS, in the same order — the two must be edited together or the
  * header and the rows drift apart.
  */
-export const GRID = "1fr 132px 92px 60px 76px 118px 78px";
+export const GRID = "1fr 132px 92px 60px 104px 76px 118px 78px";
 
 /** Line-count thresholds for the S/M/L size bucket. */
 export const SIZE_SMALL_MAX = 100;
@@ -48,6 +48,7 @@ export const COLUMN_KEYS: string[] = [
   "author",
   "size",
   "score",
+  "findings",
   "cost",
   "status",
   "updated",

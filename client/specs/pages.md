@@ -36,6 +36,7 @@ the PR list are local state on purpose.
 | Author | avatar and login |
 | Size | `S`/`M`/`L` badge plus changed lines; thresholds 100 and 400 |
 | Score | circular score, or an em dash when `score` is null — **null means never reviewed, not zero** |
+| Findings | one icon-plus-count per severity the **latest** run produced; hovering opens the read-only preview popover |
 | Cost | total USD of every **successful** run of this PR, or an em dash — **null means unknown, never $0** |
 | Status | dot badge from `STATUS_META` |
 | Updated | compact relative time (`now`, `5m`, `3h`, `2d`), right aligned |
@@ -47,9 +48,19 @@ the PR list are local state on purpose.
   `src/lib/cost.ts`: four decimals below a dollar, two above, `<$0.0001` for a
   non-zero amount below that, and `null` — rendered as an em dash — whenever the
   amount is unknown.
-- **Contract limit:** `PrMeta` exposes `score` and `cost_usd`, but no
-  per-severity finding counts. A findings column needs the server contract
-  extended; it cannot be derived on the client from the list response alone.
+### Findings popover
+
+- Opens on hover over the severity icons, closes when the pointer leaves.
+- Header reads **"N findings in this run"**, where N is the total of the latest
+  review — including findings beyond the previews.
+- Each preview shows: severity dot, title, category, `file:line`, confidence
+  percentage and a truncated rationale.
+- **Read-only. No buttons of any kind.** Accepting or dismissing a finding
+  happens in the expanded run card on the PR page, never here.
+- When the preview list is capped, a final line says how many more findings the
+  PR page holds.
+- The popover is rendered into `<body>` and positioned against the icons,
+  because the list card clips its own content.
 
 ## PR detail
 
@@ -107,6 +118,17 @@ Sections in fixed order:
 
 ### Findings panel and cards
 
+- Directly under the verdict banner and the PR score: a row of severity
+  counters — `N CRITICAL · N WARNING · N SUGGESTION` — listing only the
+  severities this run actually produced.
+- **Counts are a group-by over the findings already on screen.** No request and
+  no model call happens when the card opens or a filter is toggled, and the
+  number on a counter always equals the number of cards of that severity
+  rendered below it.
+- Under the counters, three filter buttons: **Critical**, **Warning**,
+  **Suggestion**. Clicking one keeps only that severity; clicking the same
+  button again clears the filter and restores the run's full list. A button for
+  a severity the run has none of is disabled.
 - Findings are filtered to `confidence ≥ 0.65` unless "Hide low confidence" is
   toggled off, then sorted CRITICAL → WARNING → SUGGESTION → INFO.
 - Keyboard: `j` / `k` move focus, `a` accepts, `d` dismisses; input fields are
