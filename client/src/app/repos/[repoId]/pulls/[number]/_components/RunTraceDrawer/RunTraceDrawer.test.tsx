@@ -26,8 +26,11 @@ const TRACE: RunTrace = {
   ],
 };
 
+// One mutable holder so a test can swap the trace (e.g. a run with no skills).
+const served: { trace: RunTrace } = { trace: TRACE };
+
 vi.mock("../../../../../../../lib/hooks/trace", () => ({
-  useRunTrace: () => ({ data: TRACE, isLoading: false }),
+  useRunTrace: () => ({ data: served.trace, isLoading: false }),
 }));
 vi.mock("../../../../../../../lib/hooks/reviews", () => ({
   useRunEvents: () => ({ events: [], running: false }),
@@ -35,7 +38,10 @@ vi.mock("../../../../../../../lib/hooks/reviews", () => ({
 
 import RunTraceDrawer from "./RunTraceDrawer";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  served.trace = TRACE;
+});
 
 function renderWithIntl(ui: React.ReactElement) {
   return render(
@@ -58,6 +64,27 @@ describe("A5 Run Trace drawer (smoke)", () => {
     renderWithIntl(<RunTraceDrawer runId="r1" agentName="Security" prNumber={482} onClose={() => {}} />);
     expect(screen.getByText("COST")).toBeInTheDocument();
     expect(screen.getByText("$0.0042")).toBeInTheDocument();
+  });
+
+  it("shows the skills block with its own token weight in prompt assembly", () => {
+    served.trace = { ...TRACE, skills_tokens: 320 };
+    renderWithIntl(<RunTraceDrawer runId="r1" agentName="Security" prNumber={482} onClose={() => {}} />);
+    fireEvent.click(screen.getByText("Prompt assembly"));
+    expect(screen.getByText("Skills (dynamic)")).toBeInTheDocument();
+    // The number is about the skills block alone, not the whole prompt.
+    expect(screen.getByText("~320 tokens")).toBeInTheDocument();
+  });
+
+  it("renders no skills block at all when the run had no enabled skill", () => {
+    served.trace = {
+      ...TRACE,
+      prompt_assembly: { ...TRACE.prompt_assembly, skills: null },
+      skills_tokens: null,
+    };
+    renderWithIntl(<RunTraceDrawer runId="r1" agentName="Security" prNumber={482} onClose={() => {}} />);
+    fireEvent.click(screen.getByText("Prompt assembly"));
+    expect(screen.queryByText("Skills (dynamic)")).not.toBeInTheDocument();
+    expect(screen.getByText("System")).toBeInTheDocument();
   });
 
   it("switches to the live log tab", () => {
