@@ -35,9 +35,10 @@ pnpm test       # vitest run (jsdom)
 
 ## Layout
 
-- `src/app/**` — routes. Seven pages: `/`, `/onboarding`, `/repos/[repoId]/pulls`,
-  `/repos/[repoId]/pulls/[number]`, `/agents`, `/agents/[id]`,
-  `/settings/[section]`. Route files are thin; the screen lives in `_components/`.
+- `src/app/**` — routes. Ten pages: `/`, `/onboarding`, `/repos/[repoId]/pulls`,
+  `/repos/[repoId]/pulls/[number]`, `/agents`, `/agents/[id]`, `/skills`,
+  `/skills/[id]`, `/conventions`, `/settings/[section]`. Route files are thin;
+  the screen lives in `_components/`.
 - `src/components/**` — cross-route components (app shell, diff viewer, …).
 - `src/lib/**` — `api.ts` (fetch wrapper), `hooks/` (all TanStack Query hooks),
   `providers.tsx`, `repo-context.tsx`, `theme.tsx`, `toast.tsx`, `types.ts`.

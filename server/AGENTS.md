@@ -58,8 +58,9 @@ or the API crashes at import time — the server loads its raw source.
 - `src/platform/` — cross-cutting services: `config.ts`, `container.ts` (DI
   composition root), `sse.ts` (`RunBus`), `run-logger.ts`, `price-book.ts`,
   `jobs.ts`, `errors.ts`.
-- `src/modules/<domain>/` — eight domains: `settings`, `repos`, `pulls`,
-  `polling`, `workspace`, `agents`, `reviews`, `repo-intel`. Registered
+- `src/modules/<domain>/` — ten domains: `settings`, `repos`, `pulls`,
+  `polling`, `workspace`, `agents`, `reviews`, `repo-intel`, `skills`,
+  `conventions`. Registered
   statically in `src/modules/index.ts`; `@fastify/autoload` is deliberately unused.
 - `src/adapters/` — implementations of the interfaces in
   `src/vendor/shared/adapters.ts`: LLM, GitHub, git, code index, ast-grep,

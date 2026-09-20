@@ -13,7 +13,10 @@ this file in the same commit.
 | `/repos/[repoId]/pulls` | PR list | `usePulls`, `useRefreshRepo` |
 | `/repos/[repoId]/pulls/[number]` | PR detail with three tabs and the trace drawer | `usePullDetail`, `usePrReviews`, `usePrRuns`, `usePrActiveRuns` |
 | `/agents` | Agent list | `useAgents` |
-| `/agents/[id]` | Agent list plus editor | `useAgent`, `useUpdateAgent` |
+| `/agents/[id]` | Agent list plus editor — Config and Skills tabs | `useAgent`, `useUpdateAgent`, `useSkills`, `useAgentSkills`, `useSetAgentSkills` |
+| `/skills` | Skill library: card grid plus side preview | `useSkills`, `useUpdateSkill`, `useDeleteSkill` |
+| `/skills/[id]` | One skill: Config, Preview, Versioning | `useSkill`, `useSkillVersions`, `useRestoreSkillVersion` |
+| `/conventions` | Convention candidates for the active repo, and the skill built from the accepted ones | `useConventions`, `useExtractConventions`, `usePatchConvention`, `useCreateConventionSkill` |
 | `/settings/[section]` | `api-keys` and `models` sections | `useSettings`, `useSecretsStatus`, `useTestConnection` |
 
 URL is the source of truth for tab and drawer state: `?status` on the PR list,
