@@ -1,9 +1,3 @@
-import type { SkillType } from "@devdigest/shared";
-
-/** Skill type → colour token. Types are rubrics, not severities: no red. */
-export const TYPE_TONE: Record<SkillType, string> = {
-  rubric: "var(--accent)",
-  convention: "var(--info)",
-  security: "var(--warn)",
-  custom: "var(--text-muted)",
-};
+/** Skill type → colour token. Defined once in lib so the agent's Skills tab
+    paints the same rubric with the same colour. */
+export { TYPE_TONE } from "@/lib/skill-type";

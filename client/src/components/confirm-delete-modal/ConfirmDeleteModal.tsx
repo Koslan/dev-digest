@@ -1,5 +1,7 @@
-/* Delete confirmation. Deleting a skill unlinks it from every agent that used
-   it, so the modal states the consequence rather than asking "are you sure?". */
+/* Delete confirmation, shared by the Skills library and the Agents grid. The
+   caller passes the consequence as `body` — a delete that unlinks a skill from
+   every agent, or drops an agent's history, is stated rather than asked as
+   "are you sure?". */
 "use client";
 
 import React from "react";

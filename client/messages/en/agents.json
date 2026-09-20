@@ -1,7 +1,14 @@
 {
   "card": {
     "noDescription": "No description",
-    "skillCount": "{count} skills"
+    "skillCount": "{count} skills",
+    "delete": {
+      "action": "Delete agent",
+      "title": "Delete agent",
+      "body": "Delete “{name}”? Its config history and skill links go with it; past review runs are kept but lose their agent. This cannot be undone.",
+      "confirm": "Delete agent",
+      "cancel": "Cancel"
+    }
   },
   "list": {
     "breadcrumbLab": "Skills Lab",
@@ -91,7 +98,17 @@
     "title": "Skills",
     "enabledCount": "{linked} of {total} enabled",
     "filterPlaceholder": "Filter skills…",
-    "orderHint": "Order matters — earlier skills appear earlier in the assembled prompt. Toggle to attach."
+    "orderHint": "Order matters — earlier skills appear earlier in the assembled prompt. Toggle to attach.",
+    "attachedHeading": "Enabled — prompt order",
+    "availableHeading": "All skills",
+    "dragHandle": "Drag to reorder",
+    "dragDisabled": "Enable the skill to reorder it",
+    "on": "enabled",
+    "off": "disabled",
+    "emptyAttachedTitle": "No skills enabled",
+    "emptyAttachedBody": "Turn a skill on below and it is appended to this agent's system prompt.",
+    "emptyAvailable": "Every skill is already enabled for this agent.",
+    "loadError": "Could not load skills."
   },
   "mount": {
     "body": "Mount point for {owner}. The Agent Editor shell + tab routing are wired by A2 — {owner} renders this tab."

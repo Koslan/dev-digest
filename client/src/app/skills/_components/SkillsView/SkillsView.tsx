@@ -21,7 +21,7 @@ import { AppShell } from "@/components/app-shell";
 import { useDeleteSkill, useSkills, useUpdateSkill } from "@/lib/hooks/skills";
 import { SkillFormModal } from "../SkillFormModal";
 import { SkillImportModal } from "../SkillImportModal";
-import { ConfirmDeleteModal } from "../ConfirmDeleteModal";
+import { ConfirmDeleteModal } from "@/components/confirm-delete-modal";
 import { TYPE_TONE } from "./constants";
 import { filterSkills } from "./helpers";
 import { s } from "./styles";
