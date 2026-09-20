@@ -141,4 +141,4 @@ Shapes the UI depends on: `Severity` (`CRITICAL | WARNING | SUGGESTION`),
   with blockers (`RunHistory.test.tsx:46`).
 - Theme coverage is done by rendering inside `<div data-theme={theme}>` for both
   themes.
-- Real browser journeys belong in [`../e2e`](../../e2e/CLAUDE.md), not here.
+- Real browser journeys belong in [`../e2e`](../../e2e/AGENTS.md), not here.

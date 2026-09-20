@@ -124,7 +124,7 @@ that happened before the agent fan-out.
 - History: migration `0009_complex_runaways.sql` dropped the original
   `cost_usd`, and `0010_superb_solo.sql` added it back for this feature. The
   column was re-added by generating a new migration, never by editing 0009 —
-  see [../CLAUDE.md](../CLAUDE.md).
+  see [../AGENTS.md](../AGENTS.md).
 
 ### Aggregation for the PR list
 
