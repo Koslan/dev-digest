@@ -75,8 +75,18 @@ export function TraceBody({ trace, findings }: { trace: RunTrace; findings: Find
 
       <TraceSection icon="FileText" title={t("trace.promptAssembly")} defaultOpen={false}>
         <PromptBlock label={t("trace.prompt.system")} text={trace.prompt_assembly.system} color={PROMPT_COLORS.system} />
+        {/* The skills block carries its own token weight: knowledge is not
+            free, and this is where its cost per run is visible. A disabled
+            skill leaves no block here at all. */}
         {trace.prompt_assembly.skills != null && (
-          <PromptBlock label={t("trace.prompt.skills")} text={trace.prompt_assembly.skills} color={PROMPT_COLORS.skills} />
+          <PromptBlock
+            label={t("trace.prompt.skills")}
+            text={trace.prompt_assembly.skills}
+            color={PROMPT_COLORS.skills}
+            note={t("trace.prompt.skillsTokens", {
+              count: trace.skills_tokens ?? Math.ceil(trace.prompt_assembly.skills.length / 4),
+            })}
+          />
         )}
         {trace.prompt_assembly.memory != null && (
           <PromptBlock label={t("trace.prompt.memory")} text={trace.prompt_assembly.memory} color={PROMPT_COLORS.memory} />
