@@ -78,6 +78,20 @@
       "when": 1789856673137,
       "tag": "0010_superb_solo",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789903879185,
+      "tag": "0011_slow_boomerang",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789903892577,
+      "tag": "0012_dark_star_brand",
+      "breakpoints": true
     }
   ]
 }

@@ -22,6 +22,7 @@ export * from './contracts/trace.js';
 export * from './contracts/platform.js';
 export * from './contracts/skills-api.js';
 export * from './contracts/agents-api.js';
+export * from './contracts/conventions-api.js';
 export * from './contracts/why.js';
 export * from './contracts/eval-ci.js';
 export * from './contracts/observability.js';
