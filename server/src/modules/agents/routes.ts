@@ -32,7 +32,7 @@ const VersionParams = z.object({
 
 const CreateAgentBody = z.object({
   name: z.string().min(1),
-  description: z.string().optional(),
+  description: z.string().min(1),
   provider: Provider,
   model: z.string().min(1),
   system_prompt: z.string().min(1),
@@ -121,7 +121,7 @@ export default async function agentsRoutes(appBase: FastifyInstance) {
     const { workspaceId } = await getContext(app.container, req);
     const ok = await service.delete(workspaceId, req.params.id);
     if (!ok) throw new NotFoundError('Agent not found');
-    return { ok: true };
+    return { deleted: true };
   });
 
   app.get('/agents/:id/versions', { schema: { params: IdParams } }, async (req) => {
@@ -146,7 +146,7 @@ export default async function agentsRoutes(appBase: FastifyInstance) {
     const { workspaceId } = await getContext(app.container, req);
     const agent = await service.get(workspaceId, req.params.id);
     if (!agent) throw new NotFoundError('Agent not found');
-    return service.skillLinks(req.params.id);
+    return { items: await service.skillLinks(req.params.id) };
   });
 
   app.post(
