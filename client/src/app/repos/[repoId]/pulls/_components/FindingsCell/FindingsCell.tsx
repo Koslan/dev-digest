@@ -26,6 +26,19 @@ export function FindingsCell({ findings }: { findings?: PrFindingsSummary | null
     if (rect) setAt(popoverPosition(rect, POPOVER_GAP));
   };
 
+  // A fixed-position popover does not travel with its row: scrolling or
+  // resizing would leave it floating next to an unrelated line. Close it.
+  React.useEffect(() => {
+    if (at === null) return;
+    const close = () => setAt(null);
+    window.addEventListener("scroll", close, true); // capture: inner scrollers too
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [at]);
+
   // No review yet, or a clean run: nothing to hover.
   if (!findings || findings.total === 0) return <span style={s.none}>—</span>;
 

@@ -10,6 +10,7 @@ Appended by the engineering-insights skill. Append only; never rewrite history.
 ## Mistakes
 
 - **2026-09-20 · Mistake** — Editing an already-applied file under `server/src/db/migrations/` does not change an existing database: drizzle records which files ran, so the edit is skipped and the schema silently drifts. Generate a new migration with `pnpm db:generate` instead. Evidence: `server/src/db/migrate.ts:31`.
+- **2026-09-20 · Mistake** — The Anthropic adapter's repair loop echoed the assistant turn (which carries a forced `tool_use` block) and then a plain text reprompt; the API rejects that with `tool_use ids were found without tool_result blocks` before the retry reaches the model, so every schema-failed call died on attempt two. The reprompt must be a `tool_result` block carrying the schema error. Evidence: `server/src/adapters/llm/anthropic.ts:138`.
 
 ## Decisions
 

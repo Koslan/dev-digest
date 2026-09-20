@@ -97,6 +97,15 @@ describe("FindingsCell", () => {
     expect(screen.getByText("+7 more on the PR page")).toBeInTheDocument();
   });
 
+  it("closes on scroll — a fixed popover would otherwise float beside another row", () => {
+    renderCell(SUMMARY);
+    fireEvent.mouseEnter(screen.getByTestId("findings-icons"));
+    expect(screen.getByTestId("findings-popover")).toBeInTheDocument();
+
+    fireEvent.scroll(window);
+    expect(screen.queryByTestId("findings-popover")).not.toBeInTheDocument();
+  });
+
   it("renders an em dash when the PR has no findings yet", () => {
     renderCell(null);
     expect(screen.getByText("—")).toBeInTheDocument();

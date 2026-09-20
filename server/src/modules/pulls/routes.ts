@@ -148,7 +148,17 @@ export default async function pullsRoutes(appBase: FastifyInstance) {
           score: t.reviews.score,
         })
         .from(t.reviews)
-        .where(and(inArray(t.reviews.prId, prIds), eq(t.reviews.kind, 'review')))
+        // Workspace scoping is explicit here, not inherited from prIds: the
+        // cost aggregation below scopes the same way, and a query that relies
+        // on an upstream filter for tenant isolation breaks the moment that
+        // upstream query changes.
+        .where(
+          and(
+            inArray(t.reviews.prId, prIds),
+            eq(t.reviews.workspaceId, workspaceId),
+            eq(t.reviews.kind, 'review'),
+          ),
+        )
         .orderBy(desc(t.reviews.createdAt));
       // Rows are newest-first → first seen per PR is the latest review.
       for (const rv of reviewRows) {

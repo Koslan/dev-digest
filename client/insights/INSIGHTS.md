@@ -4,6 +4,7 @@ Appended by the engineering-insights skill. Append only; never rewrite history.
 
 ## Patterns
 - **2026-09-20 · Pattern** — The PR-list table has no per-column component: `COLUMN_KEYS`, the `GRID` track list and the cells in `PRRow` are three parallel lists that must be edited together, plus the `list.columns.*` message. Miss one and the header and the rows silently misalign. Evidence: `client/src/app/repos/[repoId]/pulls/constants.ts:31`.
+- **2026-09-20 · Pattern** — A popover portalled to `<body>` with `position: fixed` does not travel with the row it belongs to, so it must close on `scroll` (capture phase, to catch inner scrollers) and on `resize`. Evidence: `client/src/app/repos/[repoId]/pulls/_components/FindingsCell/FindingsCell.tsx:29`.
 
 ## Mistakes
 - **2026-09-20 · Mistake** — A popover rendered inside a PR row is clipped: the list card sets `overflow: hidden` for its rounded corners, so only the top few pixels showed. Portal it into `<body>` with `position: fixed` and position it from the anchor's bounding rect. Evidence: `client/src/app/repos/[repoId]/pulls/styles.ts:95`.
