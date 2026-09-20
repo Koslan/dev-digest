@@ -4,6 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { Badge, Icon, CircularScore, type IconName } from "@devdigest/ui";
 import type { RunSummary, PrCommit } from "@devdigest/shared";
+import { formatCostUsd } from "@/lib/cost";
 
 /**
  * PR timeline — every agent run interleaved with the PR's commits, newest-first
@@ -197,6 +198,17 @@ export function RunHistory({
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, fontSize: 11, color: "var(--text-muted)", flexShrink: 0 }}>
               {r.ran_at && <span>{new Date(r.ran_at).toLocaleTimeString()}</span>}
+              {/* Cost of THIS run, next to when it ran. Absent when the
+                  provider reported none — never rendered as $0. */}
+              {formatCostUsd(r.cost_usd) && (
+                <span
+                  className="mono tnum"
+                  style={{ color: "var(--text-secondary)" }}
+                  title={t("timeline.runCost")}
+                >
+                  {formatCostUsd(r.cost_usd)}
+                </span>
+              )}
             </div>
             <button
               type="button"
