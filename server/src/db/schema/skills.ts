@@ -11,7 +11,9 @@ export const skills = pgTable('skills', {
   description: text('description').notNull(),
   type: text('type', { enum: ['rubric', 'convention', 'security', 'custom'] }).notNull(),
   source: text('source', {
-    enum: ['manual', 'imported_url', 'extracted', 'community'],
+    // 'imported' = uploaded as a file or archive through the import flow;
+    // 'imported_url' predates it and stays for rows written earlier.
+    enum: ['manual', 'imported_url', 'imported', 'extracted', 'community'],
   }).notNull(),
   body: text('body').notNull(),
   enabled: boolean('enabled').notNull().default(true),

@@ -89,6 +89,12 @@ export const RunTrace = z.object({
   raw_output: z.string(),
   memory_pulled: z.array(MemoryPulled),
   specs_read: z.array(z.string()),
+  /**
+   * Rough token weight of the skills block alone — what the agent's knowledge
+   * layer costs on every run. Null when no skill was attached: the block is
+   * absent, not empty.
+   */
+  skills_tokens: z.number().int().nullish(),
   log: z.array(RunLogLine),
 });
 export type RunTrace = z.infer<typeof RunTrace>;

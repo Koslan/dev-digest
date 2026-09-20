@@ -5,7 +5,7 @@ import { RunLogger } from '../../platform/run-logger.js';
 import * as schema from '../../db/schema.js';
 import type { AgentRow } from '../../db/rows.js';
 import type { ReviewRepository, FindingRow, PullRow, ReviewRow } from './repository.js';
-import { REVIEW_STRATEGY } from './constants.js';
+import { REVIEW_STRATEGY, SKILL_CHARS_PER_TOKEN } from './constants.js';
 import { taskLine } from './helpers.js';
 import { loadDiff } from './diff-loader.js';
 
@@ -183,6 +183,11 @@ export class ReviewRunExecutor {
 
       const task = taskLine(pull) + rankNote;
 
+      // L02 — the agent's knowledge layer. Bodies are inserted in the order the
+      // Skills tab puts them in, and a skill switched off contributes nothing
+      // at all: no block, no tokens, nothing in the log to mistake for one.
+      const skillBodies = await this.buildSkillBlocks(agent.id, runLog);
+
       // ---- Engine: assemble → single-pass → grounding -----------------------
       // The pure review pipeline lives in @devdigest/reviewer-core (shared with
       // the CI runner). The service owns only I/O: repo-intel context resolution
@@ -195,6 +200,9 @@ export class ReviewRunExecutor {
         // Per-agent review strategy (configured in the Agent editor); falls back
         // to the studio default. single-pass = whole diff in one call.
         strategy: agent.strategy ?? REVIEW_STRATEGY,
+        // Omit-when-empty, like every other enrichment slot: an agent with no
+        // enabled skills gets exactly the prompt it had before this feature.
+        ...(skillBodies.length > 0 ? { skills: skillBodies } : {}),
         // T1.3 — pass the callers digest only when we built one. assemblePrompt
         // omits the section when this is empty/undefined.
         ...(callersDigest ? { callers: callersDigest } : {}),
@@ -283,6 +291,11 @@ export class ReviewRunExecutor {
         raw_output: outcome.raw,
         memory_pulled: [],
         specs_read: [],
+        // What the knowledge layer cost this run. Null — not 0 — when no skill
+        // was attached, so "no block" and "an empty block" stay distinguishable.
+        skills_tokens: outcome.assembly.skills
+          ? Math.ceil(outcome.assembly.skills.length / SKILL_CHARS_PER_TOKEN)
+          : null,
         // Persisted log = the run's FULL event buffer (incl. shared pre-work:
         // diff load + intent), not just events recorded inside this method.
         log: runLog.logFor(runId),
@@ -402,6 +415,38 @@ export class ReviewRunExecutor {
       return `\n\n${hot.length} of ${changedFiles.length} changed file(s) are in the top 5% most-depended-on (high blast risk) — prioritise their correctness.`;
     } catch {
       return '';
+    }
+  }
+
+  /**
+   * Bodies of the agent's ENABLED skills, in the order the Skills tab set.
+   *
+   * Order is the point of the drag-and-drop: whatever sequence the user leaves
+   * the list in is the sequence the bodies appear in inside the prompt. A skill
+   * that is switched off is dropped here, so it costs no tokens and leaves no
+   * block behind — the log line below is what makes that visible in the trace.
+   */
+  private async buildSkillBlocks(agentId: string, runLog: RunLogger): Promise<string[]> {
+    try {
+      const links = await this.container.agentsRepo.linkedSkills(agentId);
+      const enabled = links
+        .filter((link) => link.skill.enabled)
+        .sort((a, b) => a.order - b.order);
+      if (enabled.length === 0) return [];
+
+      const bodies = enabled.map((link) => link.skill.body);
+      const tokens = Math.ceil(bodies.join('\n\n').length / SKILL_CHARS_PER_TOKEN);
+      const skipped = links.length - enabled.length;
+      runLog.info(
+        `skills: ${enabled.length} attached (${enabled
+          .map((l) => l.skill.name)
+          .join(', ')}) — ~${tokens} token(s)` + (skipped > 0 ? `; ${skipped} disabled, omitted` : ''),
+      );
+      return bodies;
+    } catch {
+      // Knowledge is enrichment, not a precondition: a failure here must not
+      // fail the review, exactly like the repo-intel builders above.
+      return [];
     }
   }
 
