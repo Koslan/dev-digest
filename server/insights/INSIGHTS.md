@@ -12,6 +12,8 @@ Appended by the engineering-insights skill. Append only; never rewrite history.
 - **2026-09-20 · Mistake** — Editing an already-applied file under `server/src/db/migrations/` does not change an existing database: drizzle records which files ran, so the edit is skipped and the schema silently drifts. Generate a new migration with `pnpm db:generate` instead. Evidence: `server/src/db/migrate.ts:31`.
 - **2026-09-20 · Mistake** — The Anthropic adapter's repair loop echoed the assistant turn (which carries a forced `tool_use` block) and then a plain text reprompt; the API rejects that with `tool_use ids were found without tool_result blocks` before the retry reaches the model, so every schema-failed call died on attempt two. The reprompt must be a `tool_result` block carrying the schema error. Evidence: `server/src/adapters/llm/anthropic.ts:138`.
 
+- **2026-09-20 · Mistake** — A rescan that dedupes new proposals against EVERY stored rule wipes the page: the pending rows it compares against are the same rows the scan is about to delete, so each re-proposed rule is dropped and the old row removed. Dedupe only against rules a human ruled on or edited. Evidence: `server/src/modules/conventions/repository.ts:111`.
+
 ## Decisions
 
 ## Context
@@ -22,6 +24,9 @@ Appended by the engineering-insights skill. Append only; never rewrite history.
 - **2026-09-20 · Context** — `server/src/vendor/shared` and `client/src/vendor/shared` are NOT identical copies: the client one trims server-only pieces (no `openrouter` provider, no CI agent manifest). Copying a whole contract file from server to client reintroduces types the Next build cannot resolve — port only the changed fields. Evidence: `client/src/vendor/shared/adapters.ts:77`.
 - **2026-09-20 · Context** — `estimateCost` prices models by exact string, so a run on a model missing from the table persists `cost_usd = null` while everything else succeeds. Model ids are used verbatim, so a dated id (`claude-haiku-4-5-20251001`) needs its own row next to the undated one. Evidence: `server/src/adapters/llm/pricing.ts:38`.
 - **2026-09-20 · Context** — An Anthropic key created at organization level is rejected by `/v1/messages` with `This API key is not scoped to a workspace`; the key has to be created inside a workspace. A Claude subscription does not fund the API either — an unfunded key fails with `credit balance is too low`. Both surface as a failed run with the provider message preserved in the trace. Evidence: `server/src/platform/container.ts:179`.
+
+- **2026-09-20 · Context** — `drizzle-kit generate` asks "created or renamed?" whenever one diff both adds and drops a column, and the prompt needs a real TTY — piping newlines and `winpty` both fail on Windows, and no file is written. Split the change into two generates (add-only, then drop-only). Evidence: `server/src/db/migrations/0011_slow_boomerang.sql`, `server/src/db/migrations/0012_dark_star_brand.sql`.
+- **2026-09-20 · Context** — `runMigrations()` takes the database URL as an ARGUMENT; calling it with none makes postgres-js fall back to the OS user and fail with `FATAL 28P01 password authentication failed`, which reads like a wrong password in `.env`. Pass `process.env.DATABASE_URL`. Evidence: `server/src/db/migrate.ts:19`.
 
 ## Errors and fixes
 

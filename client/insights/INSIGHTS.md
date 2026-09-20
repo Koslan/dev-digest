@@ -9,6 +9,8 @@ Appended by the engineering-insights skill. Append only; never rewrite history.
 ## Mistakes
 - **2026-09-20 · Mistake** — A popover rendered inside a PR row is clipped: the list card sets `overflow: hidden` for its rounded corners, so only the top few pixels showed. Portal it into `<body>` with `position: fixed` and position it from the anchor's bounding rect. Evidence: `client/src/app/repos/[repoId]/pulls/styles.ts:95`.
 
+- **2026-09-20 · Mistake** — The agent Skills tab saves the WHOLE ordered skill list on every toggle (`POST /agents/:id/skills`), so rendering rows while `useAgentSkills` is still loading lets one click unlink every skill that had not arrived. Gate the rows on both queries, not just `useSkills`. Evidence: `client/src/app/agents/[id]/_components/AgentEditor/_components/SkillsTab/SkillsTab.tsx:24`.
+
 ## Decisions
 - **2026-09-20 · Decision** — Cost is formatted in one shared helper used by the list, the timeline and the trace drawer, and `null` always renders as an em dash rather than `$0.00`: the provider not reporting a cost is unknown, not free. Evidence: `client/src/lib/cost.ts:24`.
 
