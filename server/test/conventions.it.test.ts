@@ -167,6 +167,35 @@ d('conventions module (Testcontainers pg)', () => {
     await api.close();
   });
 
+  it('re-proposes an untouched pending candidate instead of emptying the list', async () => {
+    const api = await app();
+    const repo = await makeRepo();
+
+    const first = (
+      await api.inject({
+        method: 'POST',
+        url: `/repos/${repo.id}/conventions/extract`,
+        payload: {},
+      })
+    ).json();
+    expect(first.candidates).toHaveLength(1);
+
+    // Nothing was judged, so the rescan replaces the pending row with the same
+    // proposal — deduping against a row that is about to be deleted would leave
+    // the page empty, which is the failure this pins.
+    const second = (
+      await api.inject({
+        method: 'POST',
+        url: `/repos/${repo.id}/conventions/extract`,
+        payload: {},
+      })
+    ).json();
+    expect(second.candidates).toHaveLength(1);
+    expect(second.candidates[0].id).not.toBe(first.candidates[0].id);
+
+    await api.close();
+  });
+
   it('collects accepted candidates into one repo-conventions skill linked to an agent', async () => {
     const api = await app();
     const repo = await makeRepo();

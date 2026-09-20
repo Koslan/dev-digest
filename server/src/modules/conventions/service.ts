@@ -99,7 +99,7 @@ export class ConventionsService {
     // ---- Keep what is usable --------------------------------------------
     const sampled = new Set([...configs, ...sources].map((f) => f.path));
     const seen = new Set(
-      (await this.repo.existingRules(workspaceId, repoId)).map((rule) => normaliseRule(rule)),
+      (await this.repo.persistentRules(workspaceId, repoId)).map((rule) => normaliseRule(rule)),
     );
     const kept: ConventionProposal[] = [];
     for (const proposal of result.data.candidates) {

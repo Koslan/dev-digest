@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, or } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
 import * as t from '../../db/schema.js';
 import type { ConventionRow } from '../../db/rows.js';
@@ -102,12 +102,23 @@ export class ConventionsRepository {
       );
   }
 
-  /** Rules already on file for this repo — a rescan must not propose them again. */
-  async existingRules(workspaceId: string, repoId: string): Promise<string[]> {
+  /**
+   * Rules a rescan must not propose again: the ones a human has ruled on or
+   * edited. Untouched pending rules are deliberately NOT in this set — they are
+   * about to be replaced by this scan, so deduping against them would delete
+   * the old row and drop the new proposal, leaving the page empty.
+   */
+  async persistentRules(workspaceId: string, repoId: string): Promise<string[]> {
     const rows = await this.db
       .select({ rule: t.conventions.rule })
       .from(t.conventions)
-      .where(and(eq(t.conventions.workspaceId, workspaceId), eq(t.conventions.repoId, repoId)));
+      .where(
+        and(
+          eq(t.conventions.workspaceId, workspaceId),
+          eq(t.conventions.repoId, repoId),
+          or(ne(t.conventions.status, 'pending'), eq(t.conventions.edited, true)),
+        ),
+      );
     return rows.map((r) => r.rule);
   }
 

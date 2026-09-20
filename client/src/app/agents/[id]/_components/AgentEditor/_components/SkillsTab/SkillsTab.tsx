@@ -15,8 +15,11 @@ import { s } from "./styles";
 
 export function SkillsTab({ agent }: { agent: Agent }) {
   const t = useTranslations("agents");
-  const { data: skills, isLoading, isError, refetch } = useSkills();
+  const { data: skills, isError, refetch } = useSkills();
   const { data: links } = useAgentSkills(agent.id);
+  // Both queries must have landed before anything is clickable: a toggle sends
+  // the WHOLE list back, so acting on a half-loaded one would unlink the rest.
+  const isLoading = skills === undefined || links === undefined;
   const setSkills = useSetAgentSkills();
 
   const [search, setSearch] = React.useState("");
