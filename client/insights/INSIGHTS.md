@@ -14,6 +14,8 @@ Appended by the engineering-insights skill. Append only; never rewrite history.
 ## Decisions
 - **2026-09-20 · Decision** — Cost is formatted in one shared helper used by the list, the timeline and the trace drawer, and `null` always renders as an em dash rather than `$0.00`: the provider not reporting a cost is unknown, not free. Evidence: `client/src/lib/cost.ts:24`.
 
+- **2026-09-20 · Decision** — Settings → Models stores a provider WITH the model per feature, instead of assuming OpenRouter. The model list is fetched once per provider at the top level (a hook cannot be called per row) and the row reads the list of the provider it is on. Evidence: `client/src/app/settings/[section]/_components/SettingsView/_components/SettingsModels/SettingsModels.tsx:30`.
+
 ## Context
 - **2026-09-20 · Context** — Component tests import the real `messages/en/*.json`, so a new UI string fails the test until its key exists; and a `Partial<RunSummary>` fixture stops type-checking the moment a required field is added to the contract. Both are load-bearing, not incidental. Evidence: `client/src/app/repos/[repoId]/pulls/[number]/_components/RunHistory/RunHistory.test.tsx:16`.
 - **2026-09-20 · Context** — Adding a key to `messages/en/*.json` does not reach a running `next dev`: the merged message object is cached, so the UI keeps throwing `MISSING_MESSAGE` until the dev server is restarted, even though the component tests already pass. Evidence: `client/src/i18n/request.ts:16`.

@@ -28,6 +28,8 @@ Appended by the engineering-insights skill. Append only; never rewrite history.
 - **2026-09-20 · Context** — `drizzle-kit generate` asks "created or renamed?" whenever one diff both adds and drops a column, and the prompt needs a real TTY — piping newlines and `winpty` both fail on Windows, and no file is written. Split the change into two generates (add-only, then drop-only). Evidence: `server/src/db/migrations/0011_slow_boomerang.sql`, `server/src/db/migrations/0012_dark_star_brand.sql`.
 - **2026-09-20 · Context** — `runMigrations()` takes the database URL as an ARGUMENT; calling it with none makes postgres-js fall back to the OS user and fail with `FATAL 28P01 password authentication failed`, which reads like a wrong password in `.env`. Pass `process.env.DATABASE_URL`. Evidence: `server/src/db/migrate.ts:19`.
 
+- **2026-09-20 · Context** — The conventions scan reads the sample through `container.git.readFile`, so it only works on a repo that was actually cloned (`repos.clone_path` non-null). A seeded demo repo has no clone and every sample read comes back empty, which surfaces as `CONVENTIONS_NO_SAMPLE` (422), not as a model failure. Evidence: `server/src/modules/conventions/service.ts:222`.
+
 ## Errors and fixes
 
 - **2026-09-20 · Error → Fix** — On Windows `pnpm db:migrate` and `pnpm db:seed` exit silently without touching the database, and the API then fails with `relation "agents" does not exist`. Cause: the CLI guard `import.meta.url === \`file://${process.argv[1]}\`` never matches a Windows path, so the script body never runs. Fix: call `runMigrations()` and `seed()` directly from a small tsx entry file. Evidence: `server/src/db/migrate.ts:37`, `server/src/db/seed.ts:227`.
