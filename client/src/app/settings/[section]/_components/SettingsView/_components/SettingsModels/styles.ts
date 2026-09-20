@@ -4,6 +4,9 @@ import type { CSSProperties } from "react";
 export const s = {
   wrap: { maxWidth: 640 } satisfies CSSProperties,
   row: { marginBottom: 18 } satisfies CSSProperties,
+  pickers: { display: "flex", gap: 10, alignItems: "center" } satisfies CSSProperties,
+  providerCell: { width: 150, flexShrink: 0 } satisfies CSSProperties,
+  modelCell: { flex: 1, minWidth: 0 } satisfies CSSProperties,
   defaultTag: {
     marginLeft: 8,
     fontSize: 12,
