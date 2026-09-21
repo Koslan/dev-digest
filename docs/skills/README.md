@@ -12,7 +12,13 @@ frontmatter keys are the only ones the importer interprets
 | Folder | Agent it belongs to | What it makes the model look for |
 |---|---|---|
 | [`api-contract-reviewer/`](./api-contract-reviewer) | API Contract Reviewer | breaking changes, response schemas, semver, deprecation |
-| [`test-quality-reviewer/`](./test-quality-reviewer) | Test Quality Reviewer | branches and boundaries a happy-path test leaves uncovered |
+| [`test-quality-reviewer/`](./test-quality-reviewer) | Test Quality Reviewer | uncovered branches and boundaries, mocks that replace the unit under test, flaky timing/order/randomness |
+
+The seed (`server/src/db/seed.ts`, `seedSkillsLab`) loads every file here as an
+imported skill and creates both agents with a deliberately neutral prompt, so a
+fresh `./scripts/dev.sh` can reproduce the control experiment: run the agent,
+switch its skills on in the Skills tab, run it again. Nothing is linked by the
+seed — the first run is the one without the skill.
 
 Every skill here follows the same shape, because a skill that only describes a
 topic changes nothing about a review:
