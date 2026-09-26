@@ -5,20 +5,23 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { Badge, Button, Icon, SelectInput, Textarea } from "@devdigest/ui";
-import type { ConventionCategory, ConventionPatch, ConventionRecord } from "@devdigest/shared";
+import { Badge, Button, Icon, MonoLink, SelectInput, Textarea } from "@devdigest/ui";
+import type { ConventionCategory, ConventionPatch, ConventionRecord, Repo } from "@devdigest/shared";
 import { CATEGORY_TONE, CATEGORY_VALUES } from "../../constants";
-import { confidencePercent, evidenceLabel } from "../../helpers";
+import { confidencePercent, evidenceLabel, evidenceUrl } from "../../helpers";
 import { s } from "./styles";
 
 export function CandidateCard({
   record,
   pending,
   onPatch,
+  repo,
 }: {
   record: ConventionRecord;
   pending?: boolean;
   onPatch: (patch: ConventionPatch) => void;
+  /** Active repo; when set the evidence opens the file on GitHub. */
+  repo?: Pick<Repo, "full_name" | "default_branch"> | null;
 }) {
   const t = useTranslations("conventions");
   const [editing, setEditing] = React.useState(false);
@@ -90,7 +93,7 @@ export function CandidateCard({
           <div style={s.rule}>{record.rule}</div>
           <div style={s.evidence}>
             <Icon.File size={12} />
-            <span className="mono">{evidenceLabel(record)}</span>
+            <MonoLink href={evidenceUrl(record, repo)}>{evidenceLabel(record)}</MonoLink>
           </div>
           {record.evidence_snippet ? (
             <pre className="mono" style={s.snippet}>

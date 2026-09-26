@@ -151,6 +151,7 @@ export function ConventionsView() {
                   record={record}
                   pending={patch.isPending}
                   onPatch={(p) => patch.mutate({ id: record.id, patch: p })}
+                  repo={activeRepo}
                 />
               ))}
             </div>
@@ -171,6 +172,7 @@ export function ConventionsView() {
                         record={record}
                         pending={patch.isPending}
                         onPatch={(p) => patch.mutate({ id: record.id, patch: p })}
+                        repo={activeRepo}
                       />
                     ))}
                   </div>
