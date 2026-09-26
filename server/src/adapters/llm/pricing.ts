@@ -24,6 +24,13 @@ const PRICING: Record<string, Price> = {
   'claude-3-5-sonnet-latest': { in: 3.0, out: 15.0 },
   'claude-3-5-haiku-latest': { in: 0.8, out: 4.0 },
   'claude-3-opus-latest': { in: 15.0, out: 75.0 },
+  // Current generation. The dated ids are what the API accepts as a model
+  // string, so both spellings are priced — an unlisted spelling yields a null
+  // cost, which the UI shows as "unknown", never as free.
+  'claude-opus-5': { in: 5.0, out: 25.0 },
+  'claude-sonnet-5': { in: 2.0, out: 10.0 },
+  'claude-haiku-4-5': { in: 1.0, out: 5.0 },
+  'claude-haiku-4-5-20251001': { in: 1.0, out: 5.0 },
   // OpenRouter (CI runner, cheap models). Slugs + prices are APPROXIMATE and
   // must be confirmed against openrouter.ai/models before relying on cost.
   // Unknown slugs fall through to null cost (explicitly flagged), which is safe.

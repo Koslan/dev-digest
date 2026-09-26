@@ -2,6 +2,7 @@ import type { Container } from '../../platform/container.js';
 import type {
   Agent,
   AgentSkillLink,
+  AgentSummary,
   AgentVersion,
   CiFailOn,
   ModelInfo,
@@ -55,9 +56,16 @@ export class AgentsService {
     this.repo = new AgentsRepository(container.db);
   }
 
-  async list(workspaceId: string): Promise<Agent[]> {
-    const rows = await this.repo.list(workspaceId);
-    return rows.map(toAgentDto);
+  /**
+   * The Agents grid. Each tile shows how many skills the agent links to, so the
+   * counts come back with the list — one grouped query, not one per tile.
+   */
+  async list(workspaceId: string): Promise<AgentSummary[]> {
+    const [rows, counts] = await Promise.all([
+      this.repo.list(workspaceId),
+      this.repo.skillCountsByAgent(workspaceId),
+    ]);
+    return rows.map((row) => ({ ...toAgentDto(row), skill_count: counts.get(row.id) ?? 0 }));
   }
 
   async get(workspaceId: string, id: string): Promise<Agent | undefined> {

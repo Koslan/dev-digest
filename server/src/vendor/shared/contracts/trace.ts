@@ -64,6 +64,12 @@ export const RunStats = z.object({
   tokens_out: z.number().int(),
   findings: z.number().int(),
   grounding: z.string(),
+  /**
+   * USD cost of the run. Null = the provider reported no usage cost and no
+   * estimate was available — "unknown", not "free". Absent on traces written
+   * before cost was persisted.
+   */
+  cost_usd: z.number().nullish(),
 });
 export type RunStats = z.infer<typeof RunStats>;
 
@@ -83,6 +89,12 @@ export const RunTrace = z.object({
   raw_output: z.string(),
   memory_pulled: z.array(MemoryPulled),
   specs_read: z.array(z.string()),
+  /**
+   * Rough token weight of the skills block alone — what the agent's knowledge
+   * layer costs on every run. Null when no skill was attached: the block is
+   * absent, not empty.
+   */
+  skills_tokens: z.number().int().nullish(),
   log: z.array(RunLogLine),
 });
 export type RunTrace = z.infer<typeof RunTrace>;
@@ -110,5 +122,8 @@ export const RunSummary = z.object({
   // findings that trip the agent's gate. Null on failed/cancelled runs.
   score: z.number().int().nullable(),
   blockers: z.number().int().nullable(),
+  // USD cost of this run. Null when the run failed before any LLM call, or when
+  // the provider reported neither a cost nor enough data to estimate one.
+  cost_usd: z.number().nullable(),
 });
 export type RunSummary = z.infer<typeof RunSummary>;

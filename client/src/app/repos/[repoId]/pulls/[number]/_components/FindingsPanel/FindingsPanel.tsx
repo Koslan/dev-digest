@@ -8,8 +8,14 @@ import { Toggle, EmptyState } from "@devdigest/ui";
 import type { FindingRecord } from "@devdigest/shared";
 import { FindingCard } from "../FindingCard";
 import { useFindingAction } from "../../../../../../../lib/hooks/reviews";
-import { KEY_TO_ACTION } from "./constants";
-import { visibleFindings } from "./helpers";
+import {
+  FILTER_SEVERITIES,
+  KEY_TO_ACTION,
+  SEVERITY_COLOR,
+  SEVERITY_LABEL_KEY,
+  type FilterSeverity,
+} from "./constants";
+import { countBySeverity, filterBySeverity, visibleFindings } from "./helpers";
 import { s } from "./styles";
 
 export function FindingsPanel({
@@ -26,9 +32,21 @@ export function FindingsPanel({
   const t = useTranslations("prReview");
   const action = useFindingAction();
   const [hideLow, setHideLow] = React.useState(false);
+  const [severity, setSeverity] = React.useState<FilterSeverity | null>(null);
   const [focusIdx, setFocusIdx] = React.useState(0);
 
-  const shown = React.useMemo(() => visibleFindings(findings, hideLow), [findings, hideLow]);
+  // Everything the run contributes, after the confidence filter: the list the
+  // counters count and the filter buttons narrow.
+  const inScope = React.useMemo(() => visibleFindings(findings, hideLow), [findings, hideLow]);
+  const counts = React.useMemo(() => countBySeverity(inScope), [inScope]);
+  const shown = React.useMemo(() => filterBySeverity(inScope, severity), [inScope, severity]);
+
+  // A narrower list invalidates the keyboard cursor — start from the top again.
+  React.useEffect(() => setFocusIdx(0), [severity, hideLow]);
+
+  /** Click the active filter again to clear it. */
+  const toggleSeverity = (sev: FilterSeverity) =>
+    setSeverity((current) => (current === sev ? null : sev));
 
   // j/k navigation + a/d shortcuts on the focused finding (keyboard).
   React.useEffect(() => {
@@ -45,8 +63,46 @@ export function FindingsPanel({
     return () => window.removeEventListener("keydown", handler);
   }, [shown, focusIdx, action, prId]);
 
+  const present = FILTER_SEVERITIES.filter((sev) => counts[sev] > 0);
+
   return (
     <div>
+      {/* Counters — a plain group-by over the findings already on screen.
+          Only severities this run actually produced are listed. */}
+      {present.length > 0 && (
+        <div style={s.countsRow} data-testid="severity-counts">
+          {present.map((sev, i) => (
+            <React.Fragment key={sev}>
+              {i > 0 && <span style={s.countSeparator}>·</span>}
+              <span style={s.countPill(SEVERITY_COLOR[sev])}>
+                {counts[sev]} {t(`panel.severity.${SEVERITY_LABEL_KEY[sev]}`)}
+              </span>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
+      {/* Filter buttons — click one to keep only that severity, click it again
+          to restore the full list of this run's findings. */}
+      <div style={s.filterRow}>
+        {FILTER_SEVERITIES.map((sev) => {
+          const enabled = counts[sev] > 0;
+          const active = severity === sev;
+          return (
+            <button
+              key={sev}
+              type="button"
+              aria-pressed={active}
+              disabled={!enabled}
+              onClick={() => toggleSeverity(sev)}
+              style={s.filterBtn(active, SEVERITY_COLOR[sev], enabled)}
+            >
+              {t(`panel.severity.${SEVERITY_LABEL_KEY[sev]}`)}
+            </button>
+          );
+        })}
+      </div>
+
       <div style={s.toolbar}>
         <div style={s.toggleGroup}>
           {t("panel.hideLowConfidence")}

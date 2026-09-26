@@ -28,7 +28,19 @@
     "notFound": {
       "title": "Skill not found",
       "body": "It may have been deleted."
-    }
+    },
+    "tabs": {
+      "config": "Config",
+      "preview": "Preview",
+      "versioning": "Versioning"
+    },
+    "bodyHint": "Editing the body creates a new version; the previous one stays in Versioning.",
+    "revert": "Revert changes",
+    "noVersions": "No history yet.",
+    "currentVersion": "current",
+    "diff": "Diff",
+    "hideDiff": "Hide diff",
+    "restore": "Restore"
   },
   "drawer": {
     "title": "Add a skill",
@@ -97,5 +109,67 @@
     "bodyLabel": "Skill body (Markdown)",
     "bodyHint": "Saving a changed body creates a new immutable version.",
     "version": "v{version}"
+  },
+  "breadcrumbLab": "Skills Lab",
+  "title": "Skills",
+  "subtitle": "The knowledge layer agents are composed from — each skill costs tokens on every run.",
+  "searchPlaceholder": "Filter skills…",
+  "add": {
+    "button": "Add skill",
+    "create": "Create from scratch",
+    "import": "Import from file"
+  },
+  "card": {
+    "agents": "{count, plural, =0 {no agents} one {# agent} other {# agents}}",
+    "imported": "imported",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "delete": "Delete"
+  },
+  "panel": {
+    "body": "Body",
+    "open": "Open skill",
+    "close": "Close"
+  },
+  "empty": {
+    "title": "No skills yet",
+    "body": "Write one, or import a SKILL.md from another project."
+  },
+  "error": {
+    "title": "Could not load skills",
+    "body": "The API did not answer."
+  },
+  "delete": {
+    "title": "Delete skill?",
+    "body": "Deleting “{name}” removes it from every agent that uses it. Its version history goes with it.",
+    "confirm": "Delete"
+  },
+  "form": {
+    "createTitle": "New skill",
+    "editTitle": "Edit skill",
+    "subtitle": "A skill is prose the agent reads before it reviews.",
+    "name": "Name",
+    "namePlaceholder": "test-quality-branches",
+    "description": "Description",
+    "descriptionHint": "This is the skill’s interface: the model reads it to decide whether the skill applies. Write it directively — “ALWAYS invoke when …”.",
+    "descriptionPlaceholder": "ALWAYS invoke when reviewing tests…",
+    "type": "Type",
+    "body": "Body (markdown)",
+    "bodyHint": "Everything here is pasted into the agent’s system prompt, in the order the agent’s Skills tab defines.",
+    "bodyPlaceholder": "# Rule\n\nWhat to check, and what good and bad look like.",
+    "cancel": "Cancel",
+    "create": "Create",
+    "save": "Save",
+    "saving": "Saving…"
+  },
+  "import": {
+    "title": "Import skill",
+    "subtitle": "The file is parsed on the server and shown here first — nothing is stored until you accept it.",
+    "choose": "Choose a .md or .zip file",
+    "accepts": "SKILL.md, any markdown file, or a zip archive containing one",
+    "parsing": "Parsing…",
+    "ignored": "{count, plural, one {# other file in the archive was ignored} other {# other files in the archive were ignored}}",
+    "bodyPreview": "Body",
+    "save": "Save skill"
   }
 }

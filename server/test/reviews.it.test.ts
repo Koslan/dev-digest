@@ -202,12 +202,16 @@ d('A2 reviews + agents (Testcontainers pg)', () => {
     expect(trace.config.model).toBe('gpt-4.1');
     expect(trace.stats.grounding).toBe('1/2 passed');
     expect(trace.log.length).toBeGreaterThan(0);
+    // Cost reported by the provider travels engine → trace stats → drawer.
+    expect(trace.stats.cost_usd).toBeCloseTo(0.001, 6);
 
     // agent_runs row populated for A5 to aggregate
     const [run] = await pg.handle.db.select().from(t.agentRuns).where(eq(t.agentRuns.id, runId));
     expect(run!.status).toBe('done');
     expect(run!.findingsCount).toBe(1);
     expect(run!.grounding).toBe('1/2 passed');
+    // …and is persisted on the run row, which is what the PR list sums.
+    expect(run!.costUsd).toBeCloseTo(0.001, 6);
 
     await app.close();
   });

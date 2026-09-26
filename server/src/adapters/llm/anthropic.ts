@@ -16,6 +16,15 @@ import { ExternalServiceError } from '../../platform/errors.js';
 const DEFAULT_TIMEOUT = 60_000;
 const DEFAULT_MAX_TOKENS = 4096;
 
+/**
+ * Claude 5 models reject a custom `temperature` with 400 "`temperature` is
+ * deprecated for this model", so it is sent only to earlier generations.
+ */
+export function temperatureParam(model: string, temperature: number): { temperature?: number } {
+  const major = Number(/^claude-[a-z]+-(\d+)/.exec(model)?.[1] ?? 0);
+  return major >= 5 ? {} : { temperature };
+}
+
 /** Anthropic has no embeddings API; embeddings come from the OpenAI Embedder. */
 function splitSystem(messages: ChatMessage[]): {
   system: string;
@@ -42,8 +51,9 @@ export class AnthropicProvider implements LLMProvider {
   readonly id = 'anthropic' as const;
   private client: Anthropic;
 
-  constructor(apiKey: string) {
-    this.client = new Anthropic({ apiKey });
+  /** `client` is a test seam: production passes only the key. */
+  constructor(apiKey: string, client?: Anthropic) {
+    this.client = client ?? new Anthropic({ apiKey });
   }
 
   async listModels(): Promise<ModelInfo[]> {
@@ -69,7 +79,7 @@ export class AnthropicProvider implements LLMProvider {
       system: system || undefined,
       messages: rest,
       max_tokens: req.maxTokens ?? DEFAULT_MAX_TOKENS,
-      temperature: req.temperature ?? 0.2,
+      ...temperatureParam(req.model, req.temperature ?? 0.2),
     });
     const text = res.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
@@ -104,7 +114,7 @@ export class AnthropicProvider implements LLMProvider {
             system: system || undefined,
             messages,
             max_tokens: req.maxTokens ?? DEFAULT_MAX_TOKENS,
-            temperature: req.temperature ?? 0,
+            ...temperatureParam(req.model, req.temperature ?? 0),
             tools: [
               {
                 name: toolName,
@@ -137,10 +147,23 @@ export class AnthropicProvider implements LLMProvider {
           attempts: attempt,
         };
       }
+      // Reprompt. The assistant turn we echo back contains a `tool_use` block,
+      // and the API requires the very next message to open with a matching
+      // `tool_result` — a bare text reply is rejected with a 400 before the
+      // retry ever reaches the model. Carry the schema error as that result.
       messages.push({ role: 'assistant', content: res.content });
       messages.push({
         role: 'user',
-        content: parsed.repromptMessage,
+        content: toolUse
+          ? [
+              {
+                type: 'tool_result' as const,
+                tool_use_id: toolUse.id,
+                is_error: true,
+                content: parsed.repromptMessage,
+              },
+            ]
+          : parsed.repromptMessage,
       });
     }
 

@@ -6,21 +6,59 @@
     "repoFallback": "repo",
     "subtitle": "Scan the cloned repo to surface house-rules — each backed by evidence you can turn into a Skill.",
     "scanning": "Scanning…",
-    "rescan": "Re-scan",
-    "runExtraction": "Run extraction",
+    "runScan": "Run Scan",
+    "rescan": "ReScan",
+    "runScanHint": "The first scan of this repository.",
+    "rescanHint": "Scan again. Accepted, rejected and edited candidates are kept.",
+    "createSkill": "Create skill",
+    "scanSummary": "{candidates} candidates from {sources} source files and {configs} config files · {model}",
     "extractionFailed": "Extraction failed",
     "loadError": "Could not load conventions.",
+    "noRepo": {
+      "title": "No repository selected",
+      "body": "Conventions are extracted from one repository's code. Add or open a repo first."
+    },
     "empty": {
       "title": "No conventions extracted yet",
       "body": "Scan the repo to surface house-rules — naming, error handling, structure — each backed by evidence you can turn into a Skill.",
-      "cta": "Run extraction"
+      "cta": "Run Scan"
     },
-    "candidateCount": "{count, plural, one {# candidate} other {# candidates}} · grounded against sampled files"
+    "candidateCount": "{count, plural, one {# candidate} other {# candidates}} · grounded against sampled files",
+    "acceptedCount": "{count} accepted",
+    "rejected": {
+      "count": "{count} rejected",
+      "show": "Show",
+      "hide": "Hide",
+      "restore": "Undo"
+    }
   },
   "card": {
     "confidence": "Confidence",
     "accepted": "Accepted",
-    "accepting": "Accepting…",
-    "acceptAsSkill": "Accept as Skill"
+    "rejectedLabel": "Rejected",
+    "accept": "Accept",
+    "reject": "Reject",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "ruleLabel": "Rule",
+    "categoryLabel": "Category",
+    "evidence": "Evidence",
+    "edited": "edited"
+  },
+  "createModal": {
+    "title": "Create skill from conventions",
+    "intro": "The {count} accepted conventions below are collected into one skill. Attach it to an agent and every review it runs is checked against these rules.",
+    "name": "Name",
+    "description": "Description",
+    "descriptionDefault": "Conventions extracted from {repo} and reviewed by hand.",
+    "body": "Skill body",
+    "bodyHint": "This is what reaches the model. Edit it before saving if a rule needs rewording.",
+    "agent": "Link to agent",
+    "agentNone": "Don't link yet",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating…",
+    "created": "Skill “{name}” created"
   }
 }

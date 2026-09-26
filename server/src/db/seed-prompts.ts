@@ -290,3 +290,12 @@ findings list; NEVER approve while reporting a CRITICAL. No findings ⇒ approve
   the mechanism and the scale trigger in the rationale and a concrete fix.
 - Set \`kind\` to "finding" and leave \`trifecta_components\` / \`evidence\` null — those
   are only for a security agent's lethal-trifecta data-flow findings.`;
+
+/**
+ * Deliberately generic prompt for the two control-experiment agents (Test
+ * Quality Reviewer, API Contract Reviewer). The specialisation has to come from
+ * the skills attached on the agent's Skills tab — a prompt that already asked
+ * for untested branches or breaking changes would make the "without skill" run
+ * find them too, and the experiment would prove nothing.
+ */
+export const NEUTRAL_REVIEWER_PROMPT = `You are a code reviewer. Examine the diff and return at most 5 high-value findings, each citing an exact file:line. Report only what the diff shows; do not speculate about code you cannot see.`;

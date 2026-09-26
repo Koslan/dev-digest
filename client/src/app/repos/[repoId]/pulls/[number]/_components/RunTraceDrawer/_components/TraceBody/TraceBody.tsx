@@ -8,6 +8,7 @@ import { Badge } from "@devdigest/ui";
 import type { RunTrace, FindingRecord } from "@devdigest/shared";
 import { PROMPT_COLORS } from "../../constants";
 import { formatSeconds, formatTokens } from "../../helpers";
+import { formatCostUsd } from "@/lib/cost";
 import { s } from "../../styles";
 import { TraceSection } from "../TraceSection";
 import { ToolCallRow } from "../ToolCallRow";
@@ -64,6 +65,9 @@ export function TraceBody({ trace, findings }: { trace: RunTrace; findings: Find
           <Stat label={t("trace.stat.duration")} val={formatSeconds(stats.duration_ms)} />
           <Stat label={t("trace.stat.tokens")} val={formatTokens(stats.tokens_in, stats.tokens_out)} />
           <Stat label={t("trace.stat.findings")} val={stats.findings} />
+          {/* COST of this run. Rendered as an em dash when the provider
+              reported no cost — unknown, not free. */}
+          <Stat label={t("trace.stat.cost")} val={formatCostUsd(stats.cost_usd) ?? "—"} />
         </div>
       </TraceSection>
 
@@ -71,8 +75,18 @@ export function TraceBody({ trace, findings }: { trace: RunTrace; findings: Find
 
       <TraceSection icon="FileText" title={t("trace.promptAssembly")} defaultOpen={false}>
         <PromptBlock label={t("trace.prompt.system")} text={trace.prompt_assembly.system} color={PROMPT_COLORS.system} />
+        {/* The skills block carries its own token weight: knowledge is not
+            free, and this is where its cost per run is visible. A disabled
+            skill leaves no block here at all. */}
         {trace.prompt_assembly.skills != null && (
-          <PromptBlock label={t("trace.prompt.skills")} text={trace.prompt_assembly.skills} color={PROMPT_COLORS.skills} />
+          <PromptBlock
+            label={t("trace.prompt.skills")}
+            text={trace.prompt_assembly.skills}
+            color={PROMPT_COLORS.skills}
+            note={t("trace.prompt.skillsTokens", {
+              count: trace.skills_tokens ?? Math.ceil(trace.prompt_assembly.skills.length / 4),
+            })}
+          />
         )}
         {trace.prompt_assembly.memory != null && (
           <PromptBlock label={t("trace.prompt.memory")} text={trace.prompt_assembly.memory} color={PROMPT_COLORS.memory} />

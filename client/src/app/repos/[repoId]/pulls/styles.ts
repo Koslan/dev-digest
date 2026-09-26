@@ -45,6 +45,11 @@ export const s = {
     color: "var(--text-muted)",
     textAlign: "right",
   } satisfies CSSProperties,
+  /** COST cell — known amounts read as data, unknown ones stay muted. */
+  costCell: (known: boolean): CSSProperties => ({
+    fontSize: 12,
+    color: known ? "var(--text-secondary)" : "var(--text-muted)",
+  }),
   muted: { color: "var(--text-muted)" } satisfies CSSProperties,
   filterBar: {
     display: "flex",

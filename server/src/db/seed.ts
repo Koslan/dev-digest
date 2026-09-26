@@ -1,4 +1,7 @@
 import 'dotenv/config';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createDb, type Db } from './client.js';
 import * as t from './schema.js';
 import { eq, and } from 'drizzle-orm';
@@ -6,7 +9,9 @@ import {
   GENERAL_REVIEWER_PROMPT,
   SECURITY_REVIEWER_PROMPT,
   PERFORMANCE_REVIEWER_PROMPT,
+  NEUTRAL_REVIEWER_PROMPT,
 } from './seed-prompts.js';
+import { coerceSkillType, parseFrontmatter } from '../modules/skills/helpers.js';
 
 /** Default provider/model for the built-in reviewer agents. */
 const DEFAULT_PROVIDER = 'openrouter' as const;
@@ -20,9 +25,11 @@ const DEFAULT_MODEL = 'deepseek/deepseek-v4-flash';
  * demo repo (acme/payments-api), PR #482 with files/commits, a sample review
  * with a few findings, and the three built-in agents (General + Security +
  * Performance), all on the default openrouter/deepseek-v4-flash provider+model.
+ * Plus the Skills Lab: the two control-experiment agents and their rubric
+ * skills from docs/skills (see seedSkillsLab below).
  *
- * Course lessons populate the other tables (skills, conventions, memory, eval,
- * …) once their features are built — they start empty here.
+ * Course lessons populate the other tables (conventions, memory, eval, …) once
+ * their features are built — they start empty here.
  */
 
 export const DEFAULT_WORKSPACE_NAME = 'default';
@@ -220,7 +227,87 @@ export async function seed(db: Db): Promise<{ workspaceId: string; userId: strin
     if (!existing) await db.insert(t.agents).values(a);
   }
 
+  await seedSkillsLab(db, workspaceId, userId);
+
   return { workspaceId, userId };
+}
+
+/**
+ * Skills Lab (L02) — the two control-experiment agents and the rubrics they are
+ * tested with, so a fresh `./scripts/dev.sh` can reproduce "without skill /
+ * with skill" in one toggle.
+ *
+ * The skills are read from `docs/skills/**` — the same files a user imports by
+ * hand — so there is one copy of each rubric, not a second one pasted in here.
+ * They are seeded ENABLED but NOT linked: the first run of each experiment is
+ * the one without the skill, and linking is the one click that changes it.
+ */
+const SKILLS_DIR = fileURLToPath(new URL('../../../docs/skills/', import.meta.url));
+
+const LAB_AGENTS = [
+  {
+    name: 'Test Quality Reviewer',
+    description: 'Reviews the tests that come with a change.',
+    skillsDir: 'test-quality-reviewer',
+  },
+  {
+    name: 'API Contract Reviewer',
+    description: 'Reviews changes to published HTTP and package contracts.',
+    skillsDir: 'api-contract-reviewer',
+  },
+] as const;
+
+async function seedSkillsLab(db: Db, workspaceId: string, userId: string): Promise<void> {
+  for (const lab of LAB_AGENTS) {
+    const [existing] = await db
+      .select()
+      .from(t.agents)
+      .where(and(eq(t.agents.workspaceId, workspaceId), eq(t.agents.name, lab.name)));
+    if (!existing) {
+      await db.insert(t.agents).values({
+        workspaceId,
+        name: lab.name,
+        description: lab.description,
+        provider: DEFAULT_PROVIDER,
+        model: DEFAULT_MODEL,
+        systemPrompt: NEUTRAL_REVIEWER_PROMPT,
+        enabled: true,
+        version: 1,
+        createdBy: userId,
+      });
+    }
+
+    const dir = join(SKILLS_DIR, lab.skillsDir);
+    if (!existsSync(dir)) continue; // a checkout without docs/ still seeds cleanly
+    for (const file of readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
+      const { meta, body } = parseFrontmatter(readFileSync(join(dir, file), 'utf8'));
+      const name = meta.name ?? file.replace(/\.md$/, '');
+      const [skill] = await db
+        .select()
+        .from(t.skills)
+        .where(and(eq(t.skills.workspaceId, workspaceId), eq(t.skills.name, name)));
+      if (skill) continue;
+      const [created] = await db
+        .insert(t.skills)
+        .values({
+          workspaceId,
+          name,
+          description: meta.description ?? name,
+          type: coerceSkillType(meta.type),
+          // They come from files, exactly as a hand import would.
+          source: 'imported',
+          body,
+          enabled: true,
+          version: 1,
+        })
+        .returning();
+      // Version 1 is history too, as in SkillsService.create — Restore needs it.
+      await db
+        .insert(t.skillVersions)
+        .values({ skillId: created!.id, version: 1, body })
+        .onConflictDoNothing();
+    }
+  }
 }
 
 // CLI entrypoint
